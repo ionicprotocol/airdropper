@@ -4,8 +4,11 @@ pragma solidity ^0.8.13;
 import {Test, console} from "forge-std/Test.sol";
 import {Airdropper} from "../src/Airdropper.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import {strings} from "solidity-stringutils/src/strings.sol";
 
 contract AirdropperTest is Test {
+    using strings for *;
+
     Airdropper public airdropper;
     IERC20 ion = IERC20(0x18470019bF0E94611f15852F7e93cf5D65BC34CA);
     address deployer = 0x1155b614971f16758C92c4890eD338C9e3ede6b7;
@@ -49,6 +52,32 @@ contract AirdropperTest is Test {
         airdropper.drop(recipients, values);
         for (uint256 i = 0; i < NUM_RECIPIENTS; i++) {
             assertEq(ion.balanceOf(recipients[i]), values[i]);
+        }
+    }
+
+    function test_readCsv() public {
+        while (true) {
+            string memory line = vm.readLine("test.csv");
+            console.logString(line);
+            strings.slice memory s = line.toSlice();
+            strings.slice memory delim = ",".toSlice();
+            string[] memory parts = new string[](2);
+            for (uint i = 0; i < parts.length; i++) {
+                parts[i] = s.split(delim).toString();
+            }
+            for (uint i = 0; i < parts.length; i++) {
+                console.logString(parts[i]);
+            }
+            line = vm.readLine("test.csv");
+            console.logString(line);
+            line = vm.readLine("test.csv");
+            console.logString(line);
+            line = vm.readLine("test.csv");
+            console.logString(line);
+            string memory eof = "";
+            if (keccak256(bytes(line)) == keccak256(bytes(eof))) {
+                break;
+            }
         }
     }
 }
