@@ -56,8 +56,12 @@ contract AirdropperTest is Test {
     }
 
     function test_readCsv() public {
+        string memory eof = "";
         while (true) {
             string memory line = vm.readLine("test.csv");
+            if (keccak256(bytes(line)) == keccak256(bytes(eof))) {
+                break;
+            }
             console.logString(line);
             strings.slice memory s = line.toSlice();
             strings.slice memory delim = ",".toSlice();
@@ -67,16 +71,6 @@ contract AirdropperTest is Test {
             }
             for (uint i = 0; i < parts.length; i++) {
                 console.logString(parts[i]);
-            }
-            line = vm.readLine("test.csv");
-            console.logString(line);
-            line = vm.readLine("test.csv");
-            console.logString(line);
-            line = vm.readLine("test.csv");
-            console.logString(line);
-            string memory eof = "";
-            if (keccak256(bytes(line)) == keccak256(bytes(eof))) {
-                break;
             }
         }
     }
