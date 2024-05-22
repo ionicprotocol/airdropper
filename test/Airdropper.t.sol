@@ -56,16 +56,17 @@ contract AirdropperTest is Test {
     }
 
     function test_readCsv() public {
+        uint256 MAX_BATCH = 1000;
         string memory eof = "";
+        string memory firstLine = vm.readLine("test.csv");
         while (true) {
             string memory line = vm.readLine("test.csv");
             if (keccak256(bytes(line)) == keccak256(bytes(eof))) {
                 break;
             }
-            console.logString(line);
             strings.slice memory s = line.toSlice();
             strings.slice memory delim = ",".toSlice();
-            string[] memory parts = new string[](2);
+            string[] memory parts = new string[](5);
             for (uint i = 0; i < parts.length; i++) {
                 parts[i] = s.split(delim).toString();
             }
