@@ -80,7 +80,8 @@ contract AirdropperTest is Test {
                 for (uint j = 0; j < parts.length; j++) {
                     parts[j] = s.split(delim).toString();
                 }
-                recipients[i] = address(bytes20(bytes(parts[0])));
+                console.log(parts[0]);
+                recipients[i] = stringToAddress(parts[0]);
                 console.logAddress(recipients[i]);
                 values[i] = stringToUint(parts[2]); // liquid_amount
                 console.logUint(values[i]);
@@ -102,5 +103,29 @@ contract AirdropperTest is Test {
             }
         }
         return result;
+    }
+
+    function stringToAddress(string memory str) public pure returns (address) {
+        bytes memory strBytes = bytes(str);
+        require(strBytes.length == 42, "Invalid address length");
+        bytes memory addrBytes = new bytes(20);
+
+        for (uint i = 0; i < 20; i++) {
+            addrBytes[i] = bytes1(hexCharToByte(strBytes[2 + i * 2]) * 16 + hexCharToByte(strBytes[3 + i * 2]));
+        }
+
+        return address(uint160(bytes20(addrBytes)));
+    }
+
+    function hexCharToByte(bytes1 char) internal pure returns (uint8) {
+        uint8 byteValue = uint8(char);
+        if (byteValue >= uint8(bytes1('0')) && byteValue <= uint8(bytes1('9'))) {
+            return byteValue - uint8(bytes1('0'));
+        } else if (byteValue >= uint8(bytes1('a')) && byteValue <= uint8(bytes1('f'))) {
+            return 10 + byteValue - uint8(bytes1('a'));
+        } else if (byteValue >= uint8(bytes1('A')) && byteValue <= uint8(bytes1('F'))) {
+            return 10 + byteValue - uint8(bytes1('A'));
+        }
+        revert("Invalid hex character");
     }
 }
