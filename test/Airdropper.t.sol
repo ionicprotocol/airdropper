@@ -58,23 +58,37 @@ contract AirdropperTest is Test {
     function test_readCsv() public {
         uint256 MAX_BATCH = 1000;
         string memory eof = "";
-        string memory firstLine = vm.readLine("test.csv");
+        vm.readLine("test.csv"); // skip header
         uint256 parsedSum = 0;
+        vm.startPrank(deployer);
+        bool eofReached = false;
         while (true) {
-            string memory line = vm.readLine("test.csv");
-            if (keccak256(bytes(line)) == keccak256(bytes(eof))) {
+            if (eofReached) {
                 break;
             }
-            strings.slice memory s = line.toSlice();
-            strings.slice memory delim = ",".toSlice();
-            string[] memory parts = new string[](5);
-            for (uint i = 0; i < parts.length; i++) {
-                parts[i] = s.split(delim).toString();
+            address[] memory recipients = new address[](MAX_BATCH);
+            uint256[] memory values = new uint256[](MAX_BATCH);
+            for (uint256 i = 0; i < MAX_BATCH; i++) {
+                string memory line = vm.readLine("test.csv");
+                if (keccak256(bytes(line)) == keccak256(bytes(eof))) {
+                    eofReached = true;
+                    break;
+                }
+                strings.slice memory s = line.toSlice();
+                strings.slice memory delim = ",".toSlice();
+                string[] memory parts = new string[](5);
+                for (uint j = 0; j < parts.length; j++) {
+                    parts[j] = s.split(delim).toString();
+                }
+                recipients[i] = address(bytes20(bytes(parts[0])));
+                console.logAddress(recipients[i]);
+                values[i] = stringToUint(parts[2]); // liquid_amount
+                console.logUint(values[i]);
+                parsedSum += values[i];
             }
-            uint256 parsedInt = stringToUint(parts[1]);
-            console.logUint(parsedInt);
-            parsedSum += parsedInt;
+            airdropper.drop(recipients, values);
         }
+        vm.stopPrank();
         console.logUint(parsedSum);
     }
 
