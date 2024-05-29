@@ -68,6 +68,7 @@ contract AirdropperTest is Test {
             }
             address[] memory recipients = new address[](MAX_BATCH);
             uint256[] memory values = new uint256[](MAX_BATCH);
+            uint256 batchSize = 0;
             for (uint256 i = 0; i < MAX_BATCH; i++) {
                 string memory line = vm.readLine("test.csv");
                 if (keccak256(bytes(line)) == keccak256(bytes(eof))) {
@@ -80,13 +81,13 @@ contract AirdropperTest is Test {
                 for (uint j = 0; j < parts.length; j++) {
                     parts[j] = s.split(delim).toString();
                 }
-                console.log(parts[0]);
                 recipients[i] = stringToAddress(parts[0]);
-                console.logAddress(recipients[i]);
                 values[i] = stringToUint(parts[2]); // liquid_amount
-                console.logUint(values[i]);
                 parsedSum += values[i];
+                batchSize++;
             }
+            console.log("Dropping batch");
+            console.logUint(batchSize);
             airdropper.drop(recipients, values);
         }
         vm.stopPrank();
